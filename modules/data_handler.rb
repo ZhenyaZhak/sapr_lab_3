@@ -13,46 +13,31 @@ module Modules
                [13, 11, 4, 1, 3, 15, 5, 9, 0, 10, 14, 7, 6, 8, 2, 12],
                [1, 15, 13, 0, 5, 7, 10, 4, 9, 2, 3, 14, 6, 11, 8, 12]]
 
-    def hex_to_binary(hex_string)
-      hex_string.hex.to_s(2).rjust(NUMBER_OF_BINARY_DIGITS_IN_HEX*hex_string.size, EMPTY_DIGIT)
-    end
-
     # ksd - key storage device
     def key_to_ksd(key)
-      key.scan(/.{8}/).map { |storage| hex_to_binary(storage) }
+      key.scan(/.{8}/).reverse
     end
 
     def sum_mod_32(a, b)
-      result = ''
-      a.size.times { |index| result[index] = (a[index].to_i ^ b[index].to_i).to_s }
-      result
+      (a.hex + b.hex).to_s(16).split(//).last(8).join.rjust(8, EMPTY_DIGIT)
     end
 
-    def data_substitute(data, row_index)
-      result = []
-      data.scan(/.{4}/).each do |data_sample|
-        s_block_value = S_BLOCK[row_index][bin_to_dec(data_sample)]
-        result << dec_to_bin(s_block_value)
-      end
-      result.join
+    def sum_mod_2(a, b)
+      (a.hex ^ b.hex).to_s(16).split(//).last(8).join.rjust(8, EMPTY_DIGIT)
+    end
+
+    def data_substitute(data)
+      data.split(//).reverse.map.with_index { |val, index| S_BLOCK[index][val.to_i(16)].to_s(16) }.reverse.join
     end
 
     def shift_left_11(number)
-      number.split('').rotate(11).join
-    end
-
-    def bin_to_hex(number)
-      number.scan(/.{4}/).map { |data_sample| data_sample.to_i(2).to_s(16) }.join
+      hex_to_binary(number).split(//).rotate(11).join.scan(/.{4}/).map { |sample| sample.to_i(2).to_s(16) }.join
     end
 
     private
 
-    def bin_to_dec(number)
-      number.to_i(2)
-    end
-
-    def dec_to_bin(number)
-      number.to_s(2).rjust(NUMBER_OF_BINARY_DIGITS_IN_HEX, EMPTY_DIGIT)
+    def hex_to_binary(hex_string)
+      hex_string.hex.to_s(2).rjust(NUMBER_OF_BINARY_DIGITS_IN_HEX*hex_string.size, EMPTY_DIGIT)
     end
   end
 end
